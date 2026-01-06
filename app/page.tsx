@@ -23,9 +23,9 @@ interface RadiusSearchResponse {
 
 export default function Home() {
   const [urlParams, setUrlParams] = useQueryStates({
+    job: parseAsString,
     plz: parseAsString,
     radius: parseAsInteger.withDefault(25),
-    job: parseAsString,
   })
 
   const [jobTitle, setJobTitle] = useState(urlParams.job || "")
@@ -80,9 +80,9 @@ export default function Home() {
 
     // Update URL parameters
     await setUrlParams({
+      job: jobTitle || null,
       plz,
       radius: data.radiusKm,
-      job: jobTitle || null,
     })
 
     // Perform search
@@ -130,7 +130,7 @@ export default function Home() {
                 setSearchResults(null)
                 setSearchError(null)
                 // Clear URL params
-                setUrlParams({ plz: null, radius: 25, job: jobTitle || null })
+                setUrlParams({ job: jobTitle || null, plz: null, radius: 25 })
               }}
               onSearch={handleSearch}
             />
