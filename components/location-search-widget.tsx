@@ -279,7 +279,7 @@ export function LocationSearchWidget({
         <Label htmlFor="location-input" className="text-sm font-medium">
           Ort (PLZ oder Stadt)
         </Label>
-        <div className="flex gap-0">
+        <div className="flex items-stretch gap-0">
           <div className="relative flex-1">
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 opacity-50" />
@@ -294,7 +294,7 @@ export function LocationSearchWidget({
                   setSelectedCoordinates(undefined)
                 }}
                 onFocus={() => location && suggestions.length > 0 && setShowSuggestions(true)}
-                className="h-12 rounded-r-none pl-10 pr-10 text-base"
+                className="h-12 min-h-12 rounded-r-none pl-10 pr-10 text-base"
                 autoComplete="off"
               />
               {isLoading ? (
@@ -334,7 +334,7 @@ export function LocationSearchWidget({
 
           {/* Umkreis Select direkt daneben */}
           <Select value={radiusKm.toString()} onValueChange={(value) => setRadiusKm(Number(value))}>
-            <SelectTrigger id="radius-select" className="h-12 w-32 rounded-l-none border-l-0 text-base">
+            <SelectTrigger id="radius-select" className="h-12 min-h-12 w-32 rounded-l-none border-l-0 text-base">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
