@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { MapPin, X, Search, Loader2 } from "lucide-react"
+import { MapPin, X, Search, Loader2, Briefcase } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -21,6 +21,8 @@ interface LocationSearchWidgetProps {
   onChange?: (data: { location: string; radiusKm: number; coordinates?: { lat: number; lng: number } }) => void
   onClear?: () => void
   onSearch?: (data: { location: string; radiusKm: number; coordinates?: { lat: number; lng: number } }) => void
+  jobTitle?: string
+  onJobTitleChange?: (value: string) => void
   defaultLocation?: string
   defaultRadius?: number
   className?: string
@@ -50,6 +52,8 @@ export function LocationSearchWidget({
   onChange,
   onClear,
   onSearch,
+  jobTitle = "",
+  onJobTitleChange,
   defaultLocation = "",
   defaultRadius = 25,
   className,
@@ -171,7 +175,25 @@ export function LocationSearchWidget({
   }
 
   return (
-    <div className={cn("flex flex-col gap-4 sm:flex-row sm:items-end", className)}>
+    <div className={cn("flex flex-col gap-4 lg:flex-row lg:items-end", className)}>
+      {/* Berufsbezeichnung Input */}
+      <div className="flex-1 space-y-2">
+        <Label htmlFor="job-title" className="text-sm font-medium">
+          Berufsbezeichnung
+        </Label>
+        <div className="relative">
+          <Briefcase className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50" />
+          <Input
+            id="job-title"
+            type="text"
+            placeholder="z.B. Softwareentwickler..."
+            value={jobTitle}
+            onChange={(e) => onJobTitleChange?.(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+      </div>
+
       {/* Ort Input */}
       <div className="flex-1 space-y-2">
         <Label htmlFor="location-input" className="text-sm font-medium">
@@ -231,7 +253,7 @@ export function LocationSearchWidget({
       </div>
 
       {/* Umkreis Select */}
-      <div className="w-full space-y-2 sm:w-40">
+      <div className="w-full space-y-2 lg:w-40">
         <Label htmlFor="radius-select" className="text-sm font-medium">
           Umkreis
         </Label>
@@ -250,8 +272,8 @@ export function LocationSearchWidget({
       </div>
 
       <div className="space-y-2">
-        <Label className="text-sm font-medium opacity-0 sm:block">Action</Label>
-        <Button onClick={handleSearch} disabled={!location} className="w-full sm:w-auto">
+        <Label className="text-sm font-medium opacity-0 lg:block">Action</Label>
+        <Button onClick={handleSearch} disabled={!location} className="w-full lg:w-auto">
           <Search className="mr-2 h-4 w-4" />
           Suchen
         </Button>

@@ -3,11 +3,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { LocationSearchWidget } from "@/components/location-search-widget"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { useState, useEffect } from "react"
 import { useQueryStates, parseAsString, parseAsInteger } from "nuqs"
-import { Loader2, MapPin, Briefcase } from "lucide-react"
+import { Loader2, MapPin } from "lucide-react"
 
 interface SearchResult {
   plz: string
@@ -121,25 +119,9 @@ export default function Home() {
             <CardDescription>Gib eine Stadt oder Postleitzahl ein und wähle den Suchradius</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Berufsbezeichnung */}
-            <div className="space-y-2">
-              <Label htmlFor="job-title" className="text-sm font-medium">
-                Berufsbezeichnung
-              </Label>
-              <div className="relative">
-                <Briefcase className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50" />
-                <Input
-                  id="job-title"
-                  type="text"
-                  placeholder="z.B. Softwareentwickler, Verkäufer, Pflegefachkraft..."
-                  value={jobTitle}
-                  onChange={(e) => setJobTitle(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-
             <LocationSearchWidget
+              jobTitle={jobTitle}
+              onJobTitleChange={setJobTitle}
               defaultLocation={urlParams.plz || ""}
               defaultRadius={urlParams.radius}
               onChange={(data) => {
