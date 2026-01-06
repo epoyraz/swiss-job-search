@@ -68,6 +68,35 @@ export function LocationSearchWidget({
   const dropdownRef = React.useRef<HTMLDivElement>(null)
   const abortControllerRef = React.useRef<AbortController | null>(null)
 
+  // Job autocomplete state
+  const [showJobSuggestions, setShowJobSuggestions] = React.useState(false)
+  const [jobSuggestions, setJobSuggestions] = React.useState<string[]>([])
+  const [allJobs, setAllJobs] = React.useState<string[]>([])
+  const jobInputRef = React.useRef<HTMLInputElement>(null)
+  const jobDropdownRef = React.useRef<HTMLDivElement>(null)
+
+  // Load job titles
+  React.useEffect(() => {
+    fetch("/berufe.json")
+      .then((res) => res.json())
+      .then((data: string[]) => setAllJobs(data))
+      .catch((err) => console.error("Failed to load jobs:", err))
+  }, [])
+
+  // Filter job suggestions
+  React.useEffect(() => {
+    if (jobTitle && allJobs.length > 0) {
+      const filtered = allJobs
+        .filter((job) => job.toLowerCase().includes(jobTitle.toLowerCase()))
+        .slice(0, 10)
+      setJobSuggestions(filtered)
+      setShowJobSuggestions(filtered.length > 0)
+    } else {
+      setJobSuggestions([])
+      setShowJobSuggestions(false)
+    }
+  }, [jobTitle, allJobs])
+
   // Update location when defaultLocation changes (e.g., from URL params)
   React.useEffect(() => {
     if (defaultLocation && defaultLocation !== location) {
@@ -122,6 +151,7 @@ export function LocationSearchWidget({
 
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // Handle location dropdown
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node) &&
@@ -129,6 +159,15 @@ export function LocationSearchWidget({
         !inputRef.current.contains(event.target as Node)
       ) {
         setShowSuggestions(false)
+      }
+      // Handle job dropdown
+      if (
+        jobDropdownRef.current &&
+        !jobDropdownRef.current.contains(event.target as Node) &&
+        jobInputRef.current &&
+        !jobInputRef.current.contains(event.target as Node)
+      ) {
+        setShowJobSuggestions(false)
       }
     }
 
@@ -182,15 +221,42 @@ export function LocationSearchWidget({
           Berufsbezeichnung
         </Label>
         <div className="relative">
-          <Briefcase className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 opacity-50" />
-          <Input
-            id="job-title"
-            type="text"
-            placeholder="z.B. Softwareentwickler..."
-            value={jobTitle}
-            onChange={(e) => onJobTitleChange?.(e.target.value)}
-            className="h-12 pl-10 text-base"
-          />
+          <div className="relative">
+            <Briefcase className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 opacity-50" />
+            <Input
+              ref={jobInputRef}
+              id="job-title"
+              type="text"
+              placeholder="z.B. Softwareentwickler..."
+              value={jobTitle}
+              onChange={(e) => onJobTitleChange?.(e.target.value)}
+              onFocus={() => jobTitle && jobSuggestions.length > 0 && setShowJobSuggestions(true)}
+              className="h-12 pl-10 text-base"
+              autoComplete="off"
+            />
+          </div>
+
+          {showJobSuggestions && jobSuggestions.length > 0 && (
+            <div
+              ref={jobDropdownRef}
+              className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md"
+            >
+              {jobSuggestions.map((job, index) => (
+                <button
+                  key={`${job}-${index}`}
+                  type="button"
+                  onClick={() => {
+                    onJobTitleChange?.(job)
+                    setShowJobSuggestions(false)
+                    jobInputRef.current?.blur()
+                  }}
+                  className="flex w-full items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
+                >
+                  {highlightMatch(job, jobTitle)}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
