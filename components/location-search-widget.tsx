@@ -231,9 +231,23 @@ export function LocationSearchWidget({
               value={jobTitle}
               onChange={(e) => onJobTitleChange?.(e.target.value)}
               onFocus={() => jobTitle && jobSuggestions.length > 0 && setShowJobSuggestions(true)}
-              className="h-12 pl-10 text-base"
+              className="h-12 pl-10 pr-10 text-base"
               autoComplete="off"
             />
+            {jobTitle && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2"
+                onClick={() => {
+                  onJobTitleChange?.("")
+                  setShowJobSuggestions(false)
+                }}
+              >
+                <X className="h-5 w-5" />
+                <span className="sr-only">Löschen</span>
+              </Button>
+            )}
           </div>
 
           {showJobSuggestions && jobSuggestions.length > 0 && (
