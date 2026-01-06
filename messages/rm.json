@@ -1,0 +1,36 @@
+{
+  "home": {
+    "title": "Bursa da lavur",
+    "search": {
+      "jobTitle": "Titel da professiun",
+      "jobTitlePlaceholder": "p.ex. Sviluppader da software...",
+      "location": "Lieu (NPA u citad)",
+      "locationPlaceholder": "Endatar citad u NPA...",
+      "radius": "Rajo",
+      "searchButton": "Tschertgar",
+      "clear": "Stizzar",
+      "loading": "Tschertga en curs...",
+      "action": "Acziun"
+    },
+    "results": {
+      "title": "Resultat da tschertga",
+      "count": "{count} nummers postals en il rajo da {radius} km enturn il NPA {plz}",
+      "summary": "Resumaziun",
+      "job": "Professiun:",
+      "center": "Center:",
+      "radiusLabel": "Rajo:",
+      "found": "Chattà:",
+      "plzCount": "{count} NPA"
+    },
+    "searchInfo": {
+      "job": "Lavur:",
+      "location": "Lieu:",
+      "radiusKm": "Rajo da {radius} km"
+    },
+    "errors": {
+      "searchFailed": "Tschertga fallida",
+      "selectLocation": "Tscherna per plaschair in lieu da las propostas.",
+      "genericError": "Ina errur è capitada"
+    }
+  }
+}

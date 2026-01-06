@@ -1,0 +1,36 @@
+{
+  "home": {
+    "title": "Jobbörse",
+    "search": {
+      "jobTitle": "Berufsbezeichnung",
+      "jobTitlePlaceholder": "z.B. Softwareentwickler...",
+      "location": "Ort (PLZ oder Stadt)",
+      "locationPlaceholder": "Stadt oder PLZ eingeben...",
+      "radius": "Umkreis",
+      "searchButton": "Suchen",
+      "clear": "Löschen",
+      "loading": "Suche läuft...",
+      "action": "Action"
+    },
+    "results": {
+      "title": "Suchergebnis",
+      "count": "{count} Postleitzahlen im Umkreis von {radius} km um PLZ {plz}",
+      "summary": "Zusammenfassung",
+      "job": "Beruf:",
+      "center": "Zentrum:",
+      "radiusLabel": "Radius:",
+      "found": "Gefunden:",
+      "plzCount": "{count} PLZ"
+    },
+    "searchInfo": {
+      "job": "Job:",
+      "location": "Ort:",
+      "radiusKm": "{radius} km Umkreis"
+    },
+    "errors": {
+      "searchFailed": "Suche fehlgeschlagen",
+      "selectLocation": "Bitte wähle einen Ort aus den Vorschlägen aus.",
+      "genericError": "Ein Fehler ist aufgetreten"
+    }
+  }
+}

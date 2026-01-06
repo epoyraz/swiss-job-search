@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
+import { useTranslations } from "next-intl"
 
 const RADIUS_OPTIONS = [5, 10, 25, 50, 100]
 
@@ -58,6 +59,7 @@ export function LocationSearchWidget({
   defaultRadius = 25,
   className,
 }: LocationSearchWidgetProps) {
+  const t = useTranslations("home.search")
   const [location, setLocation] = React.useState(defaultLocation)
   const [radiusKm, setRadiusKm] = React.useState(defaultRadius)
   const [showSuggestions, setShowSuggestions] = React.useState(false)
@@ -218,7 +220,7 @@ export function LocationSearchWidget({
       {/* Berufsbezeichnung Input */}
       <div className="w-full space-y-2 lg:flex-1">
         <Label htmlFor="job-title" className="text-sm font-medium">
-          Berufsbezeichnung
+          {t("jobTitle")}
         </Label>
         <div className="relative">
           <div className="relative">
@@ -227,7 +229,7 @@ export function LocationSearchWidget({
               ref={jobInputRef}
               id="job-title"
               type="text"
-              placeholder="z.B. Softwareentwickler..."
+              placeholder={t("jobTitlePlaceholder")}
               value={jobTitle}
               onChange={(e) => onJobTitleChange?.(e.target.value)}
               onFocus={() => jobTitle && jobSuggestions.length > 0 && setShowJobSuggestions(true)}
@@ -245,7 +247,7 @@ export function LocationSearchWidget({
                 }}
               >
                 <X className="h-5 w-5" />
-                <span className="sr-only">Löschen</span>
+                <span className="sr-only">{t("clear")}</span>
               </Button>
             )}
           </div>
@@ -277,7 +279,7 @@ export function LocationSearchWidget({
       {/* Ort + Umkreis kombiniert */}
       <div className="w-full space-y-2 lg:flex-1">
         <Label htmlFor="location-input" className="text-sm font-medium">
-          Ort (PLZ oder Stadt)
+          {t("location")}
         </Label>
         <div className="flex items-stretch gap-0">
           <div className="relative flex-1">
@@ -287,7 +289,7 @@ export function LocationSearchWidget({
                 ref={inputRef}
                 id="location-input"
                 type="text"
-                placeholder="Stadt oder PLZ eingeben..."
+                placeholder={t("locationPlaceholder")}
                 value={location}
                 onChange={(e) => {
                   setLocation(e.target.value)
@@ -307,7 +309,7 @@ export function LocationSearchWidget({
                   onClick={handleClear}
                 >
                   <X className="h-5 w-5" />
-                  <span className="sr-only">Löschen</span>
+                  <span className="sr-only">{t("clear")}</span>
                 </Button>
               ) : null}
             </div>
@@ -349,10 +351,10 @@ export function LocationSearchWidget({
       </div>
 
       <div className="space-y-2">
-        <Label className="text-sm font-medium opacity-0 lg:block">Action</Label>
+        <Label className="text-sm font-medium opacity-0 lg:block">{t("action")}</Label>
         <Button onClick={handleSearch} disabled={!location} className="h-12 w-full text-base lg:w-auto">
           <Search className="mr-2 h-5 w-5" />
-          Suchen
+          {t("searchButton")}
         </Button>
       </div>
     </div>

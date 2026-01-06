@@ -1,0 +1,36 @@
+{
+  "home": {
+    "title": "Borsa del lavoro",
+    "search": {
+      "jobTitle": "Titolo professionale",
+      "jobTitlePlaceholder": "p.es. Sviluppatore software...",
+      "location": "Luogo (NPA o città)",
+      "locationPlaceholder": "Inserire città o NPA...",
+      "radius": "Raggio",
+      "searchButton": "Cerca",
+      "clear": "Cancella",
+      "loading": "Ricerca in corso...",
+      "action": "Azione"
+    },
+    "results": {
+      "title": "Risultato della ricerca",
+      "count": "{count} codici postali nel raggio di {radius} km intorno al NPA {plz}",
+      "summary": "Riepilogo",
+      "job": "Professione:",
+      "center": "Centro:",
+      "radiusLabel": "Raggio:",
+      "found": "Trovato:",
+      "plzCount": "{count} NPA"
+    },
+    "searchInfo": {
+      "job": "Lavoro:",
+      "location": "Luogo:",
+      "radiusKm": "Raggio di {radius} km"
+    },
+    "errors": {
+      "searchFailed": "Ricerca fallita",
+      "selectLocation": "Seleziona un luogo dai suggerimenti.",
+      "genericError": "Si è verificato un errore"
+    }
+  }
+}

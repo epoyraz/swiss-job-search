@@ -1,0 +1,36 @@
+{
+  "home": {
+    "title": "Job Board",
+    "search": {
+      "jobTitle": "Job Title",
+      "jobTitlePlaceholder": "e.g. Software Developer...",
+      "location": "Location (ZIP or City)",
+      "locationPlaceholder": "Enter city or ZIP code...",
+      "radius": "Radius",
+      "searchButton": "Search",
+      "clear": "Clear",
+      "loading": "Searching...",
+      "action": "Action"
+    },
+    "results": {
+      "title": "Search Results",
+      "count": "{count} postal codes within {radius} km radius of ZIP {plz}",
+      "summary": "Summary",
+      "job": "Job:",
+      "center": "Center:",
+      "radiusLabel": "Radius:",
+      "found": "Found:",
+      "plzCount": "{count} ZIP"
+    },
+    "searchInfo": {
+      "job": "Job:",
+      "location": "Location:",
+      "radiusKm": "{radius} km radius"
+    },
+    "errors": {
+      "searchFailed": "Search failed",
+      "selectLocation": "Please select a location from the suggestions.",
+      "genericError": "An error occurred"
+    }
+  }
+}

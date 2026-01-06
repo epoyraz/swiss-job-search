@@ -1,0 +1,36 @@
+{
+  "home": {
+    "title": "Bourse d'emploi",
+    "search": {
+      "jobTitle": "Titre du poste",
+      "jobTitlePlaceholder": "p.ex. Développeur de logiciels...",
+      "location": "Lieu (NPA ou ville)",
+      "locationPlaceholder": "Entrer ville ou NPA...",
+      "radius": "Rayon",
+      "searchButton": "Rechercher",
+      "clear": "Effacer",
+      "loading": "Recherche en cours...",
+      "action": "Action"
+    },
+    "results": {
+      "title": "Résultat de recherche",
+      "count": "{count} codes postaux dans un rayon de {radius} km autour du NPA {plz}",
+      "summary": "Résumé",
+      "job": "Métier:",
+      "center": "Centre:",
+      "radiusLabel": "Rayon:",
+      "found": "Trouvé:",
+      "plzCount": "{count} NPA"
+    },
+    "searchInfo": {
+      "job": "Emploi:",
+      "location": "Lieu:",
+      "radiusKm": "Rayon de {radius} km"
+    },
+    "errors": {
+      "searchFailed": "Recherche échouée",
+      "selectLocation": "Veuillez choisir un lieu parmi les suggestions.",
+      "genericError": "Une erreur s'est produite"
+    }
+  }
+}
