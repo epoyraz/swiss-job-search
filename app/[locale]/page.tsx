@@ -158,10 +158,13 @@ export default function Home() {
         setHasInitialSearchRun(true)
         setHasSearched(true)
         setFilteredJobs(dummyJobs)
-        setSelectedJob(dummyJobs.length > 0 ? dummyJobs[0] : null)
+        if (dummyJobs.length > 0) {
+          setSelectedJob(dummyJobs[0])
+        }
       }
     }
-  }, [urlParams.plz, urlParams.radius, urlParams.job, hasInitialSearchRun])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlParams.plz, urlParams.radius, urlParams.job])
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-start p-6 pt-12 sm:p-12">
@@ -238,23 +241,32 @@ export default function Home() {
 
         {/* Job Results */}
         {hasSearched && filteredJobs.length > 0 && (
-          <div className="flex gap-6 h-[calc(100vh-400px)] min-h-[600px]">
-            {/* Left Column - Job List (20%) */}
-            <div className="w-[300px] shrink-0">
-              <Card className="h-full flex flex-col">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg">
-                    {filteredJobs.length} {filteredJobs.length === 1 ? "Stelle" : "Stellen"}
-                  </CardTitle>
-                  {searchResults && (
-                    <CardDescription className="text-xs">
-                      Im Umkreis von {searchResults.radiusKm} km
-                    </CardDescription>
-                  )}
-                </CardHeader>
-                <CardContent className="flex-1 overflow-hidden p-0">
-                  <ScrollArea className="h-full px-6 pb-6">
-                    <div className="space-y-3">
+          <div className="flex flex-col gap-4">
+            {/* Debug: Anzahl der Jobs */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {filteredJobs.length} {filteredJobs.length === 1 ? "Stelle" : "Stellen"} gefunden
+                </CardTitle>
+              </CardHeader>
+            </Card>
+
+            <div className="flex gap-6 h-[calc(100vh-400px)] min-h-[600px]">
+              {/* Left Column - Job List (20%) */}
+              <div className="w-[350px] shrink-0">
+                <Card className="h-full flex flex-col">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-lg">
+                      Stellenliste
+                    </CardTitle>
+                    {searchResults && (
+                      <CardDescription className="text-xs">
+                        Im Umkreis von {searchResults.radiusKm} km
+                      </CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardContent className="flex-1 overflow-auto p-0">
+                    <div className="space-y-3 px-6 pb-6">
                       {filteredJobs.map((job) => (
                         <JobCard
                           key={job.id}
@@ -264,26 +276,26 @@ export default function Home() {
                         />
                       ))}
                     </div>
-                  </ScrollArea>
-                </CardContent>
-              </Card>
-            </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-            {/* Right Column - Job Detail (80%) */}
-            <div className="flex-1 min-w-0">
-              <Card className="h-full">
-                <CardContent className="p-0 h-full">
-                  <ScrollArea className="h-full p-6">
-                    {selectedJob ? (
-                      <JobDetail job={selectedJob} />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-muted-foreground">
-                        Wähle eine Stelle aus der Liste
-                      </div>
-                    )}
-                  </ScrollArea>
-                </CardContent>
-              </Card>
+              {/* Right Column - Job Detail (80%) */}
+              <div className="flex-1 min-w-0">
+                <Card className="h-full">
+                  <CardContent className="p-0 h-full overflow-auto">
+                    <div className="p-6">
+                      {selectedJob ? (
+                        <JobDetail job={selectedJob} />
+                      ) : (
+                        <div className="flex items-center justify-center h-full text-muted-foreground">
+                          Wähle eine Stelle aus der Liste
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         )}
