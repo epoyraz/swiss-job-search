@@ -21,6 +21,7 @@ interface LocationSearchWidgetProps {
   onChange?: (data: { location: string; radiusKm: number; coordinates?: { lat: number; lng: number } }) => void
   onClear?: () => void
   onSearch?: (data: { location: string; radiusKm: number; coordinates?: { lat: number; lng: number } }) => void
+  defaultLocation?: string
   defaultRadius?: number
   className?: string
 }
@@ -49,10 +50,11 @@ export function LocationSearchWidget({
   onChange,
   onClear,
   onSearch,
+  defaultLocation = "",
   defaultRadius = 25,
   className,
 }: LocationSearchWidgetProps) {
-  const [location, setLocation] = React.useState("")
+  const [location, setLocation] = React.useState(defaultLocation)
   const [radiusKm, setRadiusKm] = React.useState(defaultRadius)
   const [showSuggestions, setShowSuggestions] = React.useState(false)
   const [suggestions, setSuggestions] = React.useState<Location[]>([])
@@ -61,6 +63,13 @@ export function LocationSearchWidget({
   const inputRef = React.useRef<HTMLInputElement>(null)
   const dropdownRef = React.useRef<HTMLDivElement>(null)
   const abortControllerRef = React.useRef<AbortController | null>(null)
+
+  // Update location when defaultLocation changes (e.g., from URL params)
+  React.useEffect(() => {
+    if (defaultLocation && defaultLocation !== location) {
+      setLocation(defaultLocation)
+    }
+  }, [defaultLocation])
 
   // Debounced API call
   React.useEffect(() => {

@@ -5,7 +5,8 @@ import { LocationSearchWidget } from "@/components/location-search-widget"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useQueryStates, parseAsString, parseAsInteger } from "nuqs"
 import { Loader2, MapPin, Briefcase } from "lucide-react"
 
 interface SearchResult {
@@ -23,7 +24,13 @@ interface RadiusSearchResponse {
 }
 
 export default function Home() {
-  const [jobTitle, setJobTitle] = useState("")
+  const [urlParams, setUrlParams] = useQueryStates({
+    plz: parseAsString,
+    radius: parseAsInteger.withDefault(25),
+    job: parseAsString,
+  })
+
+  const [jobTitle, setJobTitle] = useState(urlParams.job || "")
   const [searchData, setSearchData] = useState<{
     location: string
     radiusKm: number
@@ -33,29 +40,16 @@ export default function Home() {
   const [searchResults, setSearchResults] = useState<RadiusSearchResponse | null>(null)
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
+  const [hasInitialSearchRun, setHasInitialSearchRun] = useState(false)
 
-  const handleSearch = async (data: { 
-    location: string
-    radiusKm: number
-    coordinates?: { lat: number; lng: number }
-  }) => {
+  const performSearch = async (plz: string, radiusKm: number) => {
     setIsSearching(true)
     setSearchError(null)
     setSearchResults(null)
 
-    // Extrahiere PLZ aus dem location string (Format: "PLZ Stadt" oder nur "PLZ")
-    const plzMatch = data.location.match(/^\d{4}/)
-    if (!plzMatch) {
-      setSearchError("Bitte wähle einen Ort aus den Vorschlägen aus.")
-      setIsSearching(false)
-      return
-    }
-
-    const plz = plzMatch[0]
-
     try {
       const response = await fetch(
-        `/api/radius-search?plz=${encodeURIComponent(plz)}&radius=${data.radiusKm}`
+        `/api/radius-search?plz=${encodeURIComponent(plz)}&radius=${radiusKm}`
       )
 
       if (!response.ok) {
@@ -71,6 +65,47 @@ export default function Home() {
       setIsSearching(false)
     }
   }
+
+  const handleSearch = async (data: { 
+    location: string
+    radiusKm: number
+    coordinates?: { lat: number; lng: number }
+  }) => {
+    // Extrahiere PLZ aus dem location string (Format: "PLZ Stadt" oder nur "PLZ")
+    const plzMatch = data.location.match(/^\d{4}/)
+    if (!plzMatch) {
+      setSearchError("Bitte wähle einen Ort aus den Vorschlägen aus.")
+      return
+    }
+
+    const plz = plzMatch[0]
+
+    // Update URL parameters
+    await setUrlParams({
+      plz,
+      radius: data.radiusKm,
+      job: jobTitle || null,
+    })
+
+    // Perform search
+    await performSearch(plz, data.radiusKm)
+  }
+
+  // Load search from URL parameters on mount
+  useEffect(() => {
+    if (!hasInitialSearchRun && urlParams.plz) {
+      setHasInitialSearchRun(true)
+      
+      // Set the location field to show the PLZ
+      setSearchData({
+        location: urlParams.plz,
+        radiusKm: urlParams.radius,
+      })
+      
+      // Perform the search
+      performSearch(urlParams.plz, urlParams.radius)
+    }
+  }, [urlParams.plz, urlParams.radius, hasInitialSearchRun])
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-start p-6 pt-12 sm:p-12">
@@ -105,6 +140,8 @@ export default function Home() {
             </div>
 
             <LocationSearchWidget
+              defaultLocation={urlParams.plz || ""}
+              defaultRadius={urlParams.radius}
               onChange={(data) => {
                 setSearchData(data)
                 // Clear previous results when input changes
@@ -115,6 +152,8 @@ export default function Home() {
                 setSearchData(null)
                 setSearchResults(null)
                 setSearchError(null)
+                // Clear URL params
+                setUrlParams({ plz: null, radius: 25, job: jobTitle || null })
               }}
               onSearch={handleSearch}
             />
