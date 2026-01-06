@@ -216,7 +216,7 @@ export function LocationSearchWidget({
   return (
     <div className={cn("flex flex-col gap-4 lg:flex-row lg:items-end", className)}>
       {/* Berufsbezeichnung Input */}
-      <div className="flex-1 space-y-2">
+      <div className="w-full space-y-2 lg:flex-1">
         <Label htmlFor="job-title" className="text-sm font-medium">
           Berufsbezeichnung
         </Label>
@@ -274,81 +274,78 @@ export function LocationSearchWidget({
         </div>
       </div>
 
-      {/* Ort Input */}
-      <div className="flex-1 space-y-2">
+      {/* Ort + Umkreis kombiniert */}
+      <div className="w-full space-y-2 lg:flex-1">
         <Label htmlFor="location-input" className="text-sm font-medium">
           Ort (PLZ oder Stadt)
         </Label>
-        <div className="relative">
-          <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 opacity-50" />
-            <Input
-              ref={inputRef}
-              id="location-input"
-              type="text"
-              placeholder="Stadt oder PLZ eingeben..."
-              value={location}
-              onChange={(e) => {
-                setLocation(e.target.value)
-                setSelectedCoordinates(undefined)
-              }}
-              onFocus={() => location && suggestions.length > 0 && setShowSuggestions(true)}
-              className="h-12 pl-10 pr-10 text-base"
-              autoComplete="off"
-            />
-            {isLoading ? (
-              <Loader2 className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin opacity-50" />
-            ) : location ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2"
-                onClick={handleClear}
+        <div className="flex gap-0">
+          <div className="relative flex-1">
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 opacity-50" />
+              <Input
+                ref={inputRef}
+                id="location-input"
+                type="text"
+                placeholder="Stadt oder PLZ eingeben..."
+                value={location}
+                onChange={(e) => {
+                  setLocation(e.target.value)
+                  setSelectedCoordinates(undefined)
+                }}
+                onFocus={() => location && suggestions.length > 0 && setShowSuggestions(true)}
+                className="h-12 rounded-r-none pl-10 pr-10 text-base"
+                autoComplete="off"
+              />
+              {isLoading ? (
+                <Loader2 className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin opacity-50" />
+              ) : location ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2"
+                  onClick={handleClear}
+                >
+                  <X className="h-5 w-5" />
+                  <span className="sr-only">Löschen</span>
+                </Button>
+              ) : null}
+            </div>
+
+            {showSuggestions && suggestions.length > 0 && (
+              <div
+                ref={dropdownRef}
+                className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md"
               >
-                <X className="h-5 w-5" />
-                <span className="sr-only">Löschen</span>
-              </Button>
-            ) : null}
+                {suggestions.map((loc, index) => (
+                  <button
+                    key={`${loc.zip}-${loc.city}-${index}`}
+                    type="button"
+                    onClick={() => handleSelectSuggestion(loc)}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
+                  >
+                    <span className="font-mono text-muted-foreground">{highlightMatch(loc.zip, location)}</span>
+                    <span>{highlightMatch(loc.city, location)}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {showSuggestions && suggestions.length > 0 && (
-            <div
-              ref={dropdownRef}
-              className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md"
-            >
-              {suggestions.map((loc, index) => (
-                <button
-                  key={`${loc.zip}-${loc.city}-${index}`}
-                  type="button"
-                  onClick={() => handleSelectSuggestion(loc)}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
-                >
-                  <span className="font-mono text-muted-foreground">{highlightMatch(loc.zip, location)}</span>
-                  <span>{highlightMatch(loc.city, location)}</span>
-                </button>
+          {/* Umkreis Select direkt daneben */}
+          <Select value={radiusKm.toString()} onValueChange={(value) => setRadiusKm(Number(value))}>
+            <SelectTrigger id="radius-select" className="h-12 w-32 rounded-l-none border-l-0 text-base">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {RADIUS_OPTIONS.map((radius) => (
+                <SelectItem key={radius} value={radius.toString()}>
+                  {radius} km
+                </SelectItem>
               ))}
-            </div>
-          )}
+            </SelectContent>
+          </Select>
         </div>
-      </div>
-
-      {/* Umkreis Select */}
-      <div className="w-full space-y-2 lg:w-44">
-        <Label htmlFor="radius-select" className="text-sm font-medium">
-          Umkreis
-        </Label>
-        <Select value={radiusKm.toString()} onValueChange={(value) => setRadiusKm(Number(value))}>
-          <SelectTrigger id="radius-select" className="h-12 text-base">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {RADIUS_OPTIONS.map((radius) => (
-              <SelectItem key={radius} value={radius.toString()}>
-                {radius} km
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       <div className="space-y-2">
