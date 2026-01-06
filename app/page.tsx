@@ -107,18 +107,13 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-start p-6 pt-12 sm:p-12">
-      <div className="w-full max-w-4xl space-y-8">
-        <div className="space-y-2 text-center">
-          <h1 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl">Job-Standortsuche</h1>
-          <p className="text-pretty text-muted-foreground">Finde Jobs in deiner Nähe – wähle Ort und Umkreis</p>
+      <div className="w-full max-w-5xl space-y-8">
+        <div className="text-center">
+          <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-5xl">Jobbörse</h1>
         </div>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Standort & Umkreis</CardTitle>
-            <CardDescription>Gib eine Stadt oder Postleitzahl ein und wähle den Suchradius</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-6">
             <LocationSearchWidget
               jobTitle={jobTitle}
               onJobTitleChange={setJobTitle}

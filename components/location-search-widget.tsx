@@ -182,14 +182,14 @@ export function LocationSearchWidget({
           Berufsbezeichnung
         </Label>
         <div className="relative">
-          <Briefcase className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50" />
+          <Briefcase className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 opacity-50" />
           <Input
             id="job-title"
             type="text"
             placeholder="z.B. Softwareentwickler..."
             value={jobTitle}
             onChange={(e) => onJobTitleChange?.(e.target.value)}
-            className="pl-9"
+            className="h-12 pl-10 text-base"
           />
         </div>
       </div>
@@ -201,7 +201,7 @@ export function LocationSearchWidget({
         </Label>
         <div className="relative">
           <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50" />
+            <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 opacity-50" />
             <Input
               ref={inputRef}
               id="location-input"
@@ -213,19 +213,19 @@ export function LocationSearchWidget({
                 setSelectedCoordinates(undefined)
               }}
               onFocus={() => location && suggestions.length > 0 && setShowSuggestions(true)}
-              className="pl-9 pr-9"
+              className="h-12 pl-10 pr-10 text-base"
               autoComplete="off"
             />
             {isLoading ? (
-              <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin opacity-50" />
+              <Loader2 className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin opacity-50" />
             ) : location ? (
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
+                className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2"
                 onClick={handleClear}
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
                 <span className="sr-only">Löschen</span>
               </Button>
             ) : null}
@@ -253,12 +253,12 @@ export function LocationSearchWidget({
       </div>
 
       {/* Umkreis Select */}
-      <div className="w-full space-y-2 lg:w-40">
+      <div className="w-full space-y-2 lg:w-44">
         <Label htmlFor="radius-select" className="text-sm font-medium">
           Umkreis
         </Label>
         <Select value={radiusKm.toString()} onValueChange={(value) => setRadiusKm(Number(value))}>
-          <SelectTrigger id="radius-select">
+          <SelectTrigger id="radius-select" className="h-12 text-base">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -273,8 +273,8 @@ export function LocationSearchWidget({
 
       <div className="space-y-2">
         <Label className="text-sm font-medium opacity-0 lg:block">Action</Label>
-        <Button onClick={handleSearch} disabled={!location} className="w-full lg:w-auto">
-          <Search className="mr-2 h-4 w-4" />
+        <Button onClick={handleSearch} disabled={!location} className="h-12 w-full text-base lg:w-auto">
+          <Search className="mr-2 h-5 w-5" />
           Suchen
         </Button>
       </div>
