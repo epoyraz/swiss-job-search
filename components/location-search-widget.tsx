@@ -352,7 +352,7 @@ export function LocationSearchWidget({
 
       <div className="space-y-2">
         <Label className="text-sm font-medium opacity-0 lg:block">{t("action")}</Label>
-        <Button onClick={handleSearch} disabled={!location} className="h-12 w-full text-base lg:w-auto">
+        <Button onClick={handleSearch} disabled={!location && !jobTitle} className="h-12 w-full text-base lg:w-auto">
           <Search className="mr-2 h-5 w-5" />
           {t("searchButton")}
         </Button>

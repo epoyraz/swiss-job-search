@@ -29,7 +29,7 @@ export default function Home() {
   const [urlParams, setUrlParams] = useQueryStates({
     job: parseAsString,
     plz: parseAsString,
-    radius: parseAsInteger.withDefault(25),
+    radius: parseAsInteger,
   })
 
   const [jobTitle, setJobTitle] = useState(urlParams.job || "")
@@ -38,6 +38,9 @@ export default function Home() {
     radiusKm: number
     coordinates?: { lat: number; lng: number }
   } | null>(null)
+  
+  // Standardwert für Radius
+  const defaultRadius = 25
 
   const [searchResults, setSearchResults] = useState<RadiusSearchResponse | null>(null)
   const [isSearching, setIsSearching] = useState(false)
@@ -73,6 +76,22 @@ export default function Home() {
     radiusKm: number
     coordinates?: { lat: number; lng: number }
   }) => {
+    // Wenn keine Location angegeben ist, suche nur nach Job
+    if (!data.location) {
+      // Update URL parameters (nur job, keine plz)
+      await setUrlParams({
+        job: jobTitle || null,
+        plz: null,
+        radius: null,
+      })
+      
+      // Lösche Suchergebnisse, da wir keine Umkreissuche machen
+      setSearchResults(null)
+      setSearchError(null)
+      setSearchData(null)
+      return
+    }
+
     // Extrahiere PLZ aus dem location string (Format: "PLZ Stadt" oder nur "PLZ")
     const plzMatch = data.location.match(/^\d{4}/)
     if (!plzMatch) {
@@ -101,11 +120,11 @@ export default function Home() {
       // Set the location field to show the PLZ
       setSearchData({
         location: urlParams.plz,
-        radiusKm: urlParams.radius,
+        radiusKm: urlParams.radius || defaultRadius,
       })
       
       // Perform the search
-      performSearch(urlParams.plz, urlParams.radius)
+      performSearch(urlParams.plz, urlParams.radius || defaultRadius)
     }
   }, [urlParams.plz, urlParams.radius, hasInitialSearchRun])
 
@@ -126,7 +145,7 @@ export default function Home() {
               jobTitle={jobTitle}
               onJobTitleChange={setJobTitle}
               defaultLocation={urlParams.plz || ""}
-              defaultRadius={urlParams.radius}
+              defaultRadius={urlParams.radius || defaultRadius}
               onChange={(data) => {
                 setSearchData(data)
                 // Clear previous results when input changes
@@ -138,7 +157,7 @@ export default function Home() {
                 setSearchResults(null)
                 setSearchError(null)
                 // Clear URL params
-                setUrlParams({ job: jobTitle || null, plz: null, radius: 25 })
+                setUrlParams({ job: jobTitle || null, plz: null, radius: null })
               }}
               onSearch={handleSearch}
             />
