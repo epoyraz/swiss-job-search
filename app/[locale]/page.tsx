@@ -8,6 +8,11 @@ import { useState, useEffect } from "react"
 import { useQueryStates, parseAsString, parseAsInteger } from "nuqs"
 import { Loader2, MapPin } from "lucide-react"
 import { useTranslations } from "next-intl"
+import { JobCard } from "@/components/job-card"
+import { JobDetail } from "@/components/job-detail"
+import { dummyJobs } from "@/data/dummy-jobs"
+import { Job } from "@/types/job"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface SearchResult {
   plz: string
@@ -46,11 +51,17 @@ export default function Home() {
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
   const [hasInitialSearchRun, setHasInitialSearchRun] = useState(false)
+  
+  // State für Job-Anzeige
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>([])
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null)
+  const [hasSearched, setHasSearched] = useState(false)
 
   const performSearch = async (plz: string, radiusKm: number) => {
     setIsSearching(true)
     setSearchError(null)
     setSearchResults(null)
+    setHasSearched(true)
 
     try {
       const response = await fetch(
@@ -64,8 +75,21 @@ export default function Home() {
 
       const results = await response.json() as RadiusSearchResponse
       setSearchResults(results)
+      
+      // Filtere Jobs basierend auf den gefundenen PLZ
+      const plzSet = new Set(results.results.map((r) => r.plz))
+      const jobsInRadius = dummyJobs.filter(job => plzSet.has(job.plz))
+      
+      setFilteredJobs(jobsInRadius)
+      if (jobsInRadius.length > 0) {
+        setSelectedJob(jobsInRadius[0])
+      } else {
+        setSelectedJob(null)
+      }
     } catch (error) {
       setSearchError(error instanceof Error ? error.message : t("errors.genericError"))
+      setFilteredJobs([])
+      setSelectedJob(null)
     } finally {
       setIsSearching(false)
     }
@@ -76,7 +100,7 @@ export default function Home() {
     radiusKm: number
     coordinates?: { lat: number; lng: number }
   }) => {
-    // Wenn keine Location angegeben ist, suche nur nach Job
+    // Wenn keine Location angegeben ist, zeige alle Jobs
     if (!data.location) {
       // Update URL parameters (nur job, keine plz)
       await setUrlParams({
@@ -85,10 +109,13 @@ export default function Home() {
         radius: null,
       })
       
-      // Lösche Suchergebnisse, da wir keine Umkreissuche machen
+      // Zeige alle Jobs ohne PLZ-Filter
       setSearchResults(null)
       setSearchError(null)
       setSearchData(null)
+      setHasSearched(true)
+      setFilteredJobs(dummyJobs)
+      setSelectedJob(dummyJobs.length > 0 ? dummyJobs[0] : null)
       return
     }
 
@@ -114,23 +141,31 @@ export default function Home() {
 
   // Load search from URL parameters on mount
   useEffect(() => {
-    if (!hasInitialSearchRun && urlParams.plz) {
-      setHasInitialSearchRun(true)
-      
-      // Set the location field to show the PLZ
-      setSearchData({
-        location: urlParams.plz,
-        radiusKm: urlParams.radius || defaultRadius,
-      })
-      
-      // Perform the search
-      performSearch(urlParams.plz, urlParams.radius || defaultRadius)
+    if (!hasInitialSearchRun) {
+      if (urlParams.plz) {
+        setHasInitialSearchRun(true)
+        
+        // Set the location field to show the PLZ
+        setSearchData({
+          location: urlParams.plz,
+          radiusKm: urlParams.radius || defaultRadius,
+        })
+        
+        // Perform the search
+        performSearch(urlParams.plz, urlParams.radius || defaultRadius)
+      } else if (urlParams.job) {
+        // Nur Job-Titel, keine PLZ - zeige alle Jobs
+        setHasInitialSearchRun(true)
+        setHasSearched(true)
+        setFilteredJobs(dummyJobs)
+        setSelectedJob(dummyJobs.length > 0 ? dummyJobs[0] : null)
+      }
     }
-  }, [urlParams.plz, urlParams.radius, hasInitialSearchRun])
+  }, [urlParams.plz, urlParams.radius, urlParams.job, hasInitialSearchRun])
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-start p-6 pt-12 sm:p-12">
-      <div className="w-full max-w-5xl space-y-8">
+      <div className="w-full max-w-7xl space-y-8">
         <div className="flex items-center justify-between">
           <div className="flex-1" />
           <h1 className="flex-1 text-balance text-center text-4xl font-bold tracking-tight sm:text-5xl">{t("title")}</h1>
@@ -201,59 +236,65 @@ export default function Home() {
           </Card>
         )}
 
-        {/* Results */}
-        {searchResults && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                {t("results.title")}
-              </CardTitle>
-              <CardDescription>
-                {t("results.count", { 
-                  count: searchResults.count, 
-                  radius: searchResults.radiusKm, 
-                  plz: searchResults.plz 
-                })}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                {searchResults.results.map((result, index) => (
-                  <div
-                    key={`${result.plz}-${result.city}-${index}`}
-                    className={`rounded-lg border p-3 text-sm transition-colors hover:bg-accent ${
-                      result.plz === searchResults.plz 
-                        ? "border-primary bg-primary/5" 
-                        : "border-border"
-                    }`}
-                  >
-                    <div className="font-mono font-semibold">{result.plz}</div>
-                    <div className="truncate text-xs text-muted-foreground" title={result.city}>
-                      {result.city}
+        {/* Job Results */}
+        {hasSearched && filteredJobs.length > 0 && (
+          <div className="flex gap-6 h-[calc(100vh-400px)] min-h-[600px]">
+            {/* Left Column - Job List (20%) */}
+            <div className="w-[300px] shrink-0">
+              <Card className="h-full flex flex-col">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg">
+                    {filteredJobs.length} {filteredJobs.length === 1 ? "Stelle" : "Stellen"}
+                  </CardTitle>
+                  {searchResults && (
+                    <CardDescription className="text-xs">
+                      Im Umkreis von {searchResults.radiusKm} km
+                    </CardDescription>
+                  )}
+                </CardHeader>
+                <CardContent className="flex-1 overflow-hidden p-0">
+                  <ScrollArea className="h-full px-6 pb-6">
+                    <div className="space-y-3">
+                      {filteredJobs.map((job) => (
+                        <JobCard
+                          key={job.id}
+                          job={job}
+                          isActive={selectedJob?.id === job.id}
+                          onClick={() => setSelectedJob(job)}
+                        />
+                      ))}
                     </div>
-                  </div>
-                ))}
-              </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            </div>
 
-              {searchResults.count > 0 && (
-                <div className="mt-6 rounded-lg bg-muted/50 p-4">
-                  <h4 className="mb-2 text-sm font-medium">{t("results.summary")}</h4>
-                  <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                    {jobTitle && (
-                      <>
-                        <span>{t("results.job")} <strong className="text-foreground">{jobTitle}</strong></span>
-                        <span>•</span>
-                      </>
+            {/* Right Column - Job Detail (80%) */}
+            <div className="flex-1 min-w-0">
+              <Card className="h-full">
+                <CardContent className="p-0 h-full">
+                  <ScrollArea className="h-full p-6">
+                    {selectedJob ? (
+                      <JobDetail job={selectedJob} />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-muted-foreground">
+                        Wähle eine Stelle aus der Liste
+                      </div>
                     )}
-                    <span>{t("results.center")} <strong className="text-foreground">{searchResults.plz}</strong></span>
-                    <span>•</span>
-                    <span>{t("results.radiusLabel")} <strong className="text-foreground">{searchResults.radiusKm} km</strong></span>
-                    <span>•</span>
-                    <span>{t("results.found")} <strong className="text-foreground">{t("results.plzCount", { count: searchResults.count })}</strong></span>
-                  </div>
-                </div>
-              )}
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* No Results */}
+        {hasSearched && filteredJobs.length === 0 && !isSearching && (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <p className="text-muted-foreground">
+                Keine Stellen im ausgewählten Umkreis gefunden.
+              </p>
             </CardContent>
           </Card>
         )}
