@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { LocationSearchWidget } from "@/components/location-search-widget"
+import { LanguageSwitcher } from "@/components/language-switcher"
 import { Badge } from "@/components/ui/badge"
 import { useState, useEffect } from "react"
 import { useQueryStates, parseAsString, parseAsInteger } from "nuqs"
@@ -111,8 +112,12 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-start p-6 pt-12 sm:p-12">
       <div className="w-full max-w-5xl space-y-8">
-        <div className="text-center">
-          <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-5xl">{t("title")}</h1>
+        <div className="flex items-center justify-between">
+          <div className="flex-1" />
+          <h1 className="flex-1 text-balance text-center text-4xl font-bold tracking-tight sm:text-5xl">{t("title")}</h1>
+          <div className="flex flex-1 justify-end">
+            <LanguageSwitcher />
+          </div>
         </div>
 
         <Card>
