@@ -17,7 +17,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
-            cd /home/inozenz/code
+            cd /home/inozenz/code/swiss-job-search
             git pull
             bun install
             bun run build
