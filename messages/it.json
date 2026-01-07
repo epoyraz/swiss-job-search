@@ -1,6 +1,7 @@
 {
   "home": {
     "title": "Borsa del lavoro",
+    "subtitle": "Sfoglia {jobs} posizioni aperte in {companies} aziende in tutta la Svizzera.",
     "search": {
       "jobTitle": "Titolo professionale",
       "jobTitlePlaceholder": "p.es. Sviluppatore software...",

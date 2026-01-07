@@ -11,4 +11,5 @@ export interface Job {
   requirements: string[]
   benefits: string[]
   salary?: string
+  link?: string
 }

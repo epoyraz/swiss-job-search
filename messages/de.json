@@ -1,6 +1,7 @@
 {
   "home": {
     "title": "Jobbörse",
+    "subtitle": "Stöbere durch {jobs} offene Stellen in {companies} Unternehmen in der ganzen Schweiz.",
     "search": {
       "jobTitle": "Berufsbezeichnung",
       "jobTitlePlaceholder": "z.B. Softwareentwickler...",

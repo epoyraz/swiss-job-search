@@ -1,6 +1,7 @@
 {
   "home": {
     "title": "Bursa da lavur",
+    "subtitle": "Tschertga tras {jobs} plazzas avertas tar {companies} interpresas en Svizra.",
     "search": {
       "jobTitle": "Titel da professiun",
       "jobTitlePlaceholder": "p.ex. Sviluppader da software...",

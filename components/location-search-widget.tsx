@@ -69,6 +69,7 @@ export function LocationSearchWidget({
   const inputRef = React.useRef<HTMLInputElement>(null)
   const dropdownRef = React.useRef<HTMLDivElement>(null)
   const abortControllerRef = React.useRef<AbortController | null>(null)
+  const suppressNextLocationSuggestRef = React.useRef(false)
 
   // Job autocomplete state
   const [showJobSuggestions, setShowJobSuggestions] = React.useState(false)
@@ -76,6 +77,7 @@ export function LocationSearchWidget({
   const [allJobs, setAllJobs] = React.useState<string[]>([])
   const jobInputRef = React.useRef<HTMLInputElement>(null)
   const jobDropdownRef = React.useRef<HTMLDivElement>(null)
+  const suppressNextJobSuggestRef = React.useRef(false)
 
   // Load job titles
   React.useEffect(() => {
@@ -87,6 +89,11 @@ export function LocationSearchWidget({
 
   // Filter job suggestions
   React.useEffect(() => {
+    if (suppressNextJobSuggestRef.current) {
+      suppressNextJobSuggestRef.current = false
+      setShowJobSuggestions(false)
+      return
+    }
     if (jobTitle && allJobs.length > 0) {
       const filtered = allJobs
         .filter((job) => job.toLowerCase().includes(jobTitle.toLowerCase()))
@@ -108,6 +115,12 @@ export function LocationSearchWidget({
 
   // Debounced API call
   React.useEffect(() => {
+    if (suppressNextLocationSuggestRef.current) {
+      suppressNextLocationSuggestRef.current = false
+      setSuggestions([])
+      setShowSuggestions(false)
+      return
+    }
     if (!location || location.length < 1) {
       setSuggestions([])
       setShowSuggestions(false)
@@ -189,8 +202,10 @@ export function LocationSearchWidget({
   }, [location, radiusKm, selectedCoordinates])
 
   const handleSelectSuggestion = (loc: Location) => {
+    suppressNextLocationSuggestRef.current = true
     setLocation(`${loc.zip} ${loc.city}`)
     setSelectedCoordinates({ lat: loc.latitude, lng: loc.longitude })
+    setSuggestions([])
     setShowSuggestions(false)
     inputRef.current?.blur()
   }
@@ -262,6 +277,7 @@ export function LocationSearchWidget({
                   key={`${job}-${index}`}
                   type="button"
                   onClick={() => {
+                    suppressNextJobSuggestRef.current = true
                     onJobTitleChange?.(job)
                     setShowJobSuggestions(false)
                     jobInputRef.current?.blur()

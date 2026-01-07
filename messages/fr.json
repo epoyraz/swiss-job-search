@@ -1,6 +1,7 @@
 {
   "home": {
     "title": "Bourse d'emploi",
+    "subtitle": "Parcourez {jobs} postes ouverts dans {companies} entreprises à travers la Suisse.",
     "search": {
       "jobTitle": "Titre du poste",
       "jobTitlePlaceholder": "p.ex. Développeur de logiciels...",

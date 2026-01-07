@@ -1,6 +1,7 @@
 {
   "home": {
     "title": "Job Board",
+    "subtitle": "Browse {jobs} open positions at {companies} companies across Switzerland.",
     "search": {
       "jobTitle": "Job Title",
       "jobTitlePlaceholder": "e.g. Software Developer...",

@@ -6,13 +6,12 @@ import { LanguageSwitcher } from "@/components/language-switcher"
 import { Badge } from "@/components/ui/badge"
 import { useState, useEffect } from "react"
 import { useQueryStates, parseAsString, parseAsInteger } from "nuqs"
-import { Loader2, MapPin } from "lucide-react"
-import { useTranslations } from "next-intl"
+import { Loader2 } from "lucide-react"
+import { useTranslations, useLocale } from "next-intl"
 import { JobCard } from "@/components/job-card"
 import { JobDetail } from "@/components/job-detail"
 import { dummyJobs } from "@/data/dummy-jobs"
 import { Job } from "@/types/job"
-import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface SearchResult {
   plz: string
@@ -30,6 +29,7 @@ interface RadiusSearchResponse {
 
 export default function Home() {
   const t = useTranslations("home")
+  const locale = useLocale()
   
   const [urlParams, setUrlParams] = useQueryStates({
     job: parseAsString,
@@ -57,6 +57,89 @@ export default function Home() {
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([])
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
+  const [jobStats, setJobStats] = useState<{ jobCount: number; companyCount: number } | null>(null)
+
+  const applyJobSelection = (jobs: Job[]) => {
+    setFilteredJobs(jobs)
+
+    if (urlParams.jobid) {
+      const jobToSelect = jobs.find((j) => j.id === urlParams.jobid)
+      if (jobToSelect) {
+        setSelectedJob(jobToSelect)
+        return
+      }
+    }
+
+    if (jobs.length > 0) {
+      setSelectedJob(jobs[0])
+      setUrlParams({ jobid: jobs[0].id })
+    } else {
+      setSelectedJob(null)
+      setUrlParams({ jobid: null })
+    }
+  }
+
+  const readJson = async <T,>(response: Response): Promise<T> => {
+    const text = await response.text()
+    if (!text) {
+      throw new Error(t("errors.genericError"))
+    }
+    return JSON.parse(text) as T
+  }
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch("/api/jobs-stats")
+        const payload = await readJson<{ error?: string } | { jobCount: number; companyCount: number }>(response)
+        if (!response.ok) {
+          throw new Error((payload as { error?: string }).error || t("errors.genericError"))
+        }
+        setJobStats(payload as { jobCount: number; companyCount: number })
+      } catch (error) {
+        console.error("Failed to load job stats:", error)
+      }
+    }
+
+    fetchStats()
+  }, [])
+
+  const fetchJobsByProfession = async (profession: string, location?: string | null) => {
+    setIsSearching(true)
+    setSearchError(null)
+    setSearchResults(null)
+    setHasSearched(true)
+
+    try {
+      const response = await fetch(
+        `/api/jobs?profession=${encodeURIComponent(profession)}`
+      )
+
+      const payload = await readJson<{ error?: string } | Job[]>(response)
+      if (!response.ok) {
+        const errorData = payload as { error?: string }
+        throw new Error(errorData.error || t("errors.searchFailed"))
+      }
+
+      const jobs = payload as Job[]
+
+      let filtered = jobs
+      if (location) {
+        const city = location.replace(/^\d{4}\s*/, "").trim()
+        if (city) {
+          const cityLower = city.toLowerCase()
+          filtered = jobs.filter((job) => job.location.toLowerCase().includes(cityLower))
+        }
+      }
+
+      applyJobSelection(filtered)
+    } catch (error) {
+      setSearchError(error instanceof Error ? error.message : t("errors.genericError"))
+      applyJobSelection([])
+    } finally {
+      setIsSearching(false)
+    }
+  }
 
   // Handler to select a job and update URL
   const handleJobSelect = (job: Job) => {
@@ -64,7 +147,7 @@ export default function Home() {
     setUrlParams({ jobid: job.id })
   }
 
-  const performSearch = async (plz: string, radiusKm: number) => {
+  const performSearch = async (plz: string, radiusKm: number, profession?: string) => {
     setIsSearching(true)
     setSearchError(null)
     setSearchResults(null)
@@ -75,46 +158,33 @@ export default function Home() {
         `/api/radius-search?plz=${encodeURIComponent(plz)}&radius=${radiusKm}`
       )
 
+      const payload = await readJson<{ error?: string } | RadiusSearchResponse>(response)
       if (!response.ok) {
-        const errorData = await response.json()
+        const errorData = payload as { error?: string }
         throw new Error(errorData.error || t("errors.searchFailed"))
       }
 
-      const results = await response.json() as RadiusSearchResponse
+      const results = payload as RadiusSearchResponse
       setSearchResults(results)
       
-      // Filtere Jobs basierend auf den gefundenen PLZ
-      const plzSet = new Set(results.results.map((r) => r.plz))
-      const jobsInRadius = dummyJobs.filter(job => plzSet.has(job.plz))
-      
-      setFilteredJobs(jobsInRadius)
-      
-      // Select job from URL if jobid is present and exists in filtered results
-      if (urlParams.jobid) {
-        const jobToSelect = jobsInRadius.find(j => j.id === urlParams.jobid)
-        if (jobToSelect) {
-          setSelectedJob(jobToSelect)
-        } else if (jobsInRadius.length > 0) {
-          // Job not found in filtered results, select first and update URL
-          setSelectedJob(jobsInRadius[0])
-          setUrlParams({ jobid: jobsInRadius[0].id })
-        } else {
-          setSelectedJob(null)
-          setUrlParams({ jobid: null })
-        }
-      } else if (jobsInRadius.length > 0) {
-        // No jobid in URL, select first job and add to URL
-        setSelectedJob(jobsInRadius[0])
-        setUrlParams({ jobid: jobsInRadius[0].id })
-      } else {
-        setSelectedJob(null)
-        setUrlParams({ jobid: null })
+      const plzs = Array.from(new Set([plz, ...results.results.map((r) => r.plz)]))
+      const jobsResponse = await fetch(
+        `/api/jobs?plzs=${encodeURIComponent(plzs.join(","))}${
+          profession ? `&profession=${encodeURIComponent(profession)}` : ""
+        }`
+      )
+
+      const jobsPayload = await readJson<{ error?: string } | Job[]>(jobsResponse)
+      if (!jobsResponse.ok) {
+        const errorData = jobsPayload as { error?: string }
+        throw new Error(errorData.error || t("errors.searchFailed"))
       }
+
+      const jobs = jobsPayload as Job[]
+      applyJobSelection(jobs)
     } catch (error) {
       setSearchError(error instanceof Error ? error.message : t("errors.genericError"))
-      setFilteredJobs([])
-      setSelectedJob(null)
-      setUrlParams({ jobid: null })
+      applyJobSelection([])
     } finally {
       setIsSearching(false)
     }
@@ -139,8 +209,11 @@ export default function Home() {
       setSearchError(null)
       setSearchData(null)
       setHasSearched(true)
-      setFilteredJobs(dummyJobs)
-      setSelectedJob(dummyJobs.length > 0 ? dummyJobs[0] : null)
+      if (jobTitle) {
+        await fetchJobsByProfession(jobTitle)
+      } else {
+        applyJobSelection(dummyJobs)
+      }
       return
     }
 
@@ -161,7 +234,7 @@ export default function Home() {
     })
 
     // Perform search
-    await performSearch(plz, data.radiusKm)
+    await performSearch(plz, data.radiusKm, jobTitle || undefined)
   }
 
   // Load search from URL parameters on mount
@@ -177,26 +250,12 @@ export default function Home() {
         })
         
         // Perform the search
-        performSearch(urlParams.plz, urlParams.radius || defaultRadius)
+        performSearch(urlParams.plz, urlParams.radius || defaultRadius, urlParams.job || undefined)
       } else if (urlParams.job) {
         // Nur Job-Titel, keine PLZ - zeige alle Jobs
         setHasInitialSearchRun(true)
         setHasSearched(true)
-        setFilteredJobs(dummyJobs)
-        
-        // Select job from URL if jobid is present
-        if (urlParams.jobid) {
-          const jobToSelect = dummyJobs.find(j => j.id === urlParams.jobid)
-          if (jobToSelect) {
-            setSelectedJob(jobToSelect)
-          } else if (dummyJobs.length > 0) {
-            setSelectedJob(dummyJobs[0])
-            setUrlParams({ jobid: dummyJobs[0].id })
-          }
-        } else if (dummyJobs.length > 0) {
-          setSelectedJob(dummyJobs[0])
-          setUrlParams({ jobid: dummyJobs[0].id })
-        }
+        fetchJobsByProfession(urlParams.job)
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -207,7 +266,17 @@ export default function Home() {
       <div className="w-full max-w-7xl space-y-8">
         <div className="flex items-center justify-between">
           <div className="flex-1" />
-          <h1 className="flex-1 text-balance text-center text-4xl font-bold tracking-tight sm:text-5xl">{t("title")}</h1>
+          <div className="flex-1 text-center">
+            <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-5xl">{t("title")}</h1>
+            {jobStats && (
+              <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+                {t("subtitle", {
+                  jobs: jobStats.jobCount.toLocaleString(locale),
+                  companies: jobStats.companyCount.toLocaleString(locale),
+                })}
+              </p>
+            )}
+          </div>
           <div className="flex flex-1 justify-end">
             <LanguageSwitcher />
           </div>
@@ -290,7 +359,7 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <div className="flex gap-6 h-[calc(100vh-400px)] min-h-[600px]">
+            <div className="flex gap-6 h-[calc(100vh-280px)] min-h-[720px]">
               {/* Left Column - Job List (20%) */}
               <div className="w-[350px] shrink-0">
                 <Card className="h-full flex flex-col">
@@ -322,8 +391,8 @@ export default function Home() {
               {/* Right Column - Job Detail (80%) */}
               <div className="flex-1 min-w-0">
                 <Card className="h-full">
-                  <CardContent className="p-0 h-full overflow-auto">
-                    <div className="p-6">
+                  <CardContent className="p-0 h-full overflow-hidden">
+                    <div className="p-6 h-full">
                       {selectedJob ? (
                         <JobDetail job={selectedJob} />
                       ) : (
