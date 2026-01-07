@@ -19,6 +19,7 @@ jobs:
             set -e
             cd /home/inozenz/code/swiss-job-search
             git pull
+            export PATH="$HOME/.bun/bin:$PATH"
             bun install
             bun run build
             pm2 restart jobs
