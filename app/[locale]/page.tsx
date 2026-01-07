@@ -35,6 +35,7 @@ export default function Home() {
     job: parseAsString,
     plz: parseAsString,
     radius: parseAsInteger,
+    jobid: parseAsString,
   })
 
   const [jobTitle, setJobTitle] = useState(urlParams.job || "")
@@ -56,6 +57,12 @@ export default function Home() {
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([])
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
+
+  // Handler to select a job and update URL
+  const handleJobSelect = (job: Job) => {
+    setSelectedJob(job)
+    setUrlParams({ jobid: job.id })
+  }
 
   const performSearch = async (plz: string, radiusKm: number) => {
     setIsSearching(true)
@@ -81,15 +88,33 @@ export default function Home() {
       const jobsInRadius = dummyJobs.filter(job => plzSet.has(job.plz))
       
       setFilteredJobs(jobsInRadius)
-      if (jobsInRadius.length > 0) {
+      
+      // Select job from URL if jobid is present and exists in filtered results
+      if (urlParams.jobid) {
+        const jobToSelect = jobsInRadius.find(j => j.id === urlParams.jobid)
+        if (jobToSelect) {
+          setSelectedJob(jobToSelect)
+        } else if (jobsInRadius.length > 0) {
+          // Job not found in filtered results, select first and update URL
+          setSelectedJob(jobsInRadius[0])
+          setUrlParams({ jobid: jobsInRadius[0].id })
+        } else {
+          setSelectedJob(null)
+          setUrlParams({ jobid: null })
+        }
+      } else if (jobsInRadius.length > 0) {
+        // No jobid in URL, select first job and add to URL
         setSelectedJob(jobsInRadius[0])
+        setUrlParams({ jobid: jobsInRadius[0].id })
       } else {
         setSelectedJob(null)
+        setUrlParams({ jobid: null })
       }
     } catch (error) {
       setSearchError(error instanceof Error ? error.message : t("errors.genericError"))
       setFilteredJobs([])
       setSelectedJob(null)
+      setUrlParams({ jobid: null })
     } finally {
       setIsSearching(false)
     }
@@ -158,13 +183,24 @@ export default function Home() {
         setHasInitialSearchRun(true)
         setHasSearched(true)
         setFilteredJobs(dummyJobs)
-        if (dummyJobs.length > 0) {
+        
+        // Select job from URL if jobid is present
+        if (urlParams.jobid) {
+          const jobToSelect = dummyJobs.find(j => j.id === urlParams.jobid)
+          if (jobToSelect) {
+            setSelectedJob(jobToSelect)
+          } else if (dummyJobs.length > 0) {
+            setSelectedJob(dummyJobs[0])
+            setUrlParams({ jobid: dummyJobs[0].id })
+          }
+        } else if (dummyJobs.length > 0) {
           setSelectedJob(dummyJobs[0])
+          setUrlParams({ jobid: dummyJobs[0].id })
         }
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [urlParams.plz, urlParams.radius, urlParams.job])
+  }, [urlParams.plz, urlParams.radius, urlParams.job, urlParams.jobid])
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-start p-6 pt-12 sm:p-12">
@@ -194,8 +230,11 @@ export default function Home() {
                 setSearchData(null)
                 setSearchResults(null)
                 setSearchError(null)
+                setFilteredJobs([])
+                setSelectedJob(null)
+                setHasSearched(false)
                 // Clear URL params
-                setUrlParams({ job: jobTitle || null, plz: null, radius: null })
+                setUrlParams({ job: jobTitle || null, plz: null, radius: null, jobid: null })
               }}
               onSearch={handleSearch}
             />
@@ -272,7 +311,7 @@ export default function Home() {
                           key={job.id}
                           job={job}
                           isActive={selectedJob?.id === job.id}
-                          onClick={() => setSelectedJob(job)}
+                          onClick={() => handleJobSelect(job)}
                         />
                       ))}
                     </div>
